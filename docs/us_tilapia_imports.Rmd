@@ -1,0 +1,69 @@
+---
+title: "Tilapia Imports"
+author: "Hailey Veirs"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(janitor)
+library(here)
+```
+
+### Task 2
+
+```{r}
+# Read in the data 
+us_tilapia_imports <- read_csv(here::here("data", "us_tilapia_imports.csv"))
+
+# look at the summaries of the data 
+summary(us_tilapia_imports)
+names(us_tilapia_imports)
+dim(us_tilapia_imports)
+skimr::skim(us_tilapia_imports)
+```
+
+```{r}
+# Change the table
+us_tilapia_imports_crunch <- us_tilapia_imports |>
+  pivot_longer(cols = -country, values_to = "imports", 
+               names_to = "year") |>
+  mutate(year = as.numeric(year))
+# Change the year column to numeric from string
+
+# Store total imports
+yearly_tilapia_tot <- us_tilapia_imports_crunch |>
+  dplyr::group_by(year) |> 
+  summarize(total_import = sum(imports, na.rm = TRUE))
+
+```
+
+```{r}
+total_tilapia_plot <- ggplot(data = yearly_tilapia_tot, 
+                             aes(x = year, y = total_import)) +
+  geom_line() +
+  labs(title = "Total Tilapia Imports by Year", 
+       x = "Year", 
+       y = "Total Tilapia Import Volume (thousands of pounds)")
+
+total_tilapia_plot
+```
+
+```{r}
+south_america_imports <- us_tilapia_imports_crunch |>
+  dplyr::filter(country %in% c("Ecuador", "Honduras", "Costa Rica", "Mexico"))
+
+south_america_imports_plot <- ggplot(data = south_america_imports, 
+                                     aes(x = year, y = imports)) + 
+  geom_line(aes(color = country)) + 
+  labs(title = "South American Tilapia Imports", 
+       x = "Year", 
+       y = "Tilapia Import Volume (thousands of pounds)")
+
+south_america_imports_plot
+
+```
+
+
